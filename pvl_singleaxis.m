@@ -93,7 +93,7 @@ p.parse(SunZen, SunAz, Latitude, AxisTilt, AxisAzimuth, MaxAngle, varargin{:})
 if Latitude<0
     msgbox('This code doesn''t work for the southern hemisphere');
     return
-end;
+end
 
 BackTrack = p.Results.BackTrack;
 GCR = p.Results.GCR;
@@ -174,7 +174,8 @@ wid(~u) = 0;  % set horizontal if zenith<0, sun is below panel horizon
 % angle convention being used here.
 if (BackTrack ~= 0)
     Lew = 1/GCR;
-    temp = min(Lew.*cosd(wid),1);
+    temp = min(Lew.*cosd(wid),1); % ensures argument of acos is <= 1
+    temp = max(temp, -1); % ensures argument of acos is >= -1
     wc = acosd(temp);   % backtrack angle; always positive (acosd returns values between 0 and 180)
     v = wid<0;
     widc(~v) = wid(~v) - wc(~v); % Eq 4 applied when wid in QI
@@ -245,13 +246,13 @@ if Latitude>0
     SurfAz = SurfAz - AxisAzimuth;
 else
     SurfAz = SurfAz - AxisAzimuth - 180;
-end;
+end
 SurfAz(SurfAz<0) = 360+ SurfAz(SurfAz<0);
 
 divisor = (round(tempnorm.*projNormnorm.*10000))./10000;
 dividend = (round(dot(temp,projNorm,2).*10000))./10000;
 
-
+divisor(divisor<eps) = eps; %Added by D. Riley to avoid division by 0
 SurfTilt = 90 - acosd(dividend./divisor);
 SurfTilt = SurfTilt(:);
 
